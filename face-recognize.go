@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"image"
 	"image/jpeg"
 	"io/ioutil"
@@ -19,44 +18,48 @@ type faceST struct {
 	Descriptor [128]float32 `json:"descriptor"`
 }
 
+type recResult struct {
+	anonymousNum int
+	names        []string
+}
+
 // 人脸对比
 // face-recognizor
-func faceRec(rec *face.Recognizer, img image.Image, names []string) {
+func faceRec(rec *face.Recognizer, img image.Image, names []string) (results recResult, err error) {
 	//start := time.Now()
 	buf := new(bytes.Buffer)
 	jpeg.Encode(buf, img, nil)
 	rawImg := buf.Bytes()
 	cFaces, err := rec.Recognize(rawImg)
 	if err != nil {
-		fmt.Println("Can't recognize: ", err)
-	}
-	if cFaces == nil {
+		log.Println("要识别的图片有问题啊大哥", err)
 		return
 	}
-
-	numFace := len(cFaces)
-	if numFace == 0 {
+	if len(cFaces) == 0 {
+		// 用404代表没识别出东西来
+		results.anonymousNum = 404
 		return
 	}
 
 	numAnonymous := 0
-	fmt.Print("有", numFace, "个人来了！")
 	faceDescriptorIndex := 0
 	for _, faceI := range cFaces {
 		faceDescriptorIndex = rec.Classify(faceI.Descriptor)
+
+		//为什么这么写, 原因是发现不认识的人经常被识别为第一个
 		if faceDescriptorIndex < 1 {
 			numAnonymous = numAnonymous + 1
 			continue
 		}
-		fmt.Print(names[faceDescriptorIndex])
+		results.names = append(results.names, names[faceDescriptorIndex])
+
 	}
-	if numAnonymous > 1 {
-		fmt.Println(numAnonymous, "个不认识")
-	}
-	fmt.Println()
+	results.anonymousNum = numAnonymous
+
 	//elapsed := time.Since(start)
 	//fmt.Println("该函数执行完成耗时：", elapsed)
 	// 不要看我注释掉的这几行代码了，这是我用来测试我那电脑蠢到了什么程度的。
+	return
 }
 
 // 使用特定的模型生成人脸识别器，并将已知人脸特征数据填充到此结构中。
