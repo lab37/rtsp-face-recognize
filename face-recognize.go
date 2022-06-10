@@ -26,20 +26,34 @@ func faceRec(rec *face.Recognizer, img image.Image, names []string) {
 	buf := new(bytes.Buffer)
 	jpeg.Encode(buf, img, nil)
 	rawImg := buf.Bytes()
-	cFace, err := rec.RecognizeSingle(rawImg)
+	cFaces, err := rec.Recognize(rawImg)
 	if err != nil {
 		fmt.Println("Can't recognize: ", err)
 	}
-	if cFace == nil {
+	if cFaces == nil {
 		return
 	}
-	cFaceDescriptorIndex := rec.Classify(cFace.Descriptor)
-	if cFaceDescriptorIndex < 1 {
-		fmt.Println("Can't classify")
-		fmt.Println("有人来了，但是不认识是谁")
+
+	numFace := len(cFaces)
+	if numFace == 0 {
 		return
 	}
-	fmt.Println(names[cFaceDescriptorIndex], "来了")
+
+	numAnonymous := 0
+	fmt.Print("有", numFace, "个人来了！")
+	faceDescriptorIndex := 0
+	for _, faceI := range cFaces {
+		faceDescriptorIndex = rec.Classify(faceI.Descriptor)
+		if faceDescriptorIndex < 1 {
+			numAnonymous = numAnonymous + 1
+			continue
+		}
+		fmt.Print(names[faceDescriptorIndex])
+	}
+	if numAnonymous > 1 {
+		fmt.Println(numAnonymous, "个不认识")
+	}
+	fmt.Println()
 	//elapsed := time.Since(start)
 	//fmt.Println("该函数执行完成耗时：", elapsed)
 	// 不要看我注释掉的这几行代码了，这是我用来测试我那电脑蠢到了什么程度的。
