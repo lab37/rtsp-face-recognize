@@ -90,7 +90,7 @@ sudo apt install libavcodec-dev  libavformat-dev  libavresample-dev  libswscale-
 ```
 这个是人脸特征的数据文件,每个人的人脸特征数据由128个浮点数组成。我编写了一个程序用来根据人脸的照片生成这组数(https://github.com/lab37/generate-face-128D-tools)
 
-### 安装与运行
+### 4.安装与运行
 - 使用如下命令进入到GOPATH目录, 下载本程序代码：
 ```bash
 cd ~/go/src/
@@ -100,7 +100,7 @@ go get
 ```
 - 编辑config.json文件, 将url处的值替换成自己摄像头的RTSP流地址。
 
-- 使用https://github.com/lab37/generate-face-128D-tools生成自己的人脸数据, 填写到face-data.json文件中。
+- 使用(https://github.com/lab37/generate-face-128D-tools), 生成自己的人脸数据, 填写到face-data.json文件中。
 
 - 在rtsp-face-recognize目录内使用如下命令开启人脸识别程序。
 
@@ -124,7 +124,7 @@ ffmpeg -i "rtsp://192.168.31.225:554/ch0_1.h264" -y -f image2 -r 1/1  -update  1
 每隔1秒截取5张指定分辨率的图片并覆盖在同一张图片上
 ffmpeg -i "rtsp://192.168.31.225:554/ch0_1.h264" -y -f image2 -r 5/1 -update 1  /home/lab37/faceImg/rtsp.jpg
 
-测试后发最好是：每隔1秒截取5张指定分辨率960*540的图片并覆盖在同一张图片上,-vf format=gray是转为灰度图
+每隔1秒截取5张指定分辨率960*540的图片, 转成灰度图并覆盖在同一张图片上(-vf format=gray是转为灰度图)
 ffmpeg -i "rtsp://192.168.31.225:554/ch0_1.h264" -y -f image2 -r 5/1 -update 1   -s 960x540  -vf format=gray  /home/lab37/faceImg/rtsp.jpg
 
 
@@ -136,6 +136,6 @@ sudo mount -t tmpfs -o size=100M tmpfs /home/lab37/faceImg
 在/etc/fstab文件中增加挂载配置，可以实现系统启动时自动挂载。具体如下：
 sudo gedit /etc/fstab
 在文件中增加如下内容并保存。
-tmpfs	/home/lab37/faceImg	 tmpfs	defaults,size=100M	0 0
+tmpfs	/home/lab37/faceImg	tmpfs	defaults,size=100M	0 0
 ```
 
