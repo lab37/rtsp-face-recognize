@@ -48,19 +48,19 @@ ssh服务的默认root密码为空
 我电脑安装的是ubuntu20.04 server系统, 不是ubuntu桌面系统, 因为电脑很垃圾带不动桌面.
 - 安装完操作系统后连上网络, 执行下面的命令完成系统基础程序的安装和配置：
 ```bash
-sudo apt update  && sudo apt upgrady -y
+sudo apt update  && sudo apt upgrade -y
 sudo apt install golang  git  ffmpeg  -y
 go  env  -w GOPROXY=https://goproxy.cn, direct
 mkdir  -p   ~/go/src
 ```
 - 上面那个go-face里面用到了dlib, 用下面的命令给它安装依赖：
 ```bash
-sudo apt install libdlib-dev libblas-dev liblapack-dev libjpeg-turbo8-dev libatlas-base-dev
+sudo apt install libdlib-dev libblas-dev liblapack-dev libjpeg-turbo8-dev libatlas-base-dev -y
 ```
 
 - 上面那个RTSPtoImage里面用到了一些ffmpeg的库, 用下面的命令给它安装依赖：
 ```bash
-sudo apt install libavcodec-dev  libavformat-dev  libavresample-dev  libswscale-dev
+sudo apt install libavcodec-dev  libavformat-dev  libavresample-dev  libswscale-dev  -y
 ```
 
 行了, 搞定！
