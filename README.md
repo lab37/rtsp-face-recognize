@@ -116,6 +116,37 @@ go run *.go
 ## 扩展功能
 识别人脸后将人脸数据以MQTT协议的方式传递给home-assistant, 用home-assistant调用小爱智能音箱的TTS功能，播报人名。可以做为一个人脸识别门禁使用。
 此功能已增加到代码中
+1. 在ubuntu中安装MQTT服务器
+```bash
+sudo  apt install mosquitto
+配置文件在：/etc/mosquitto/mosquitto.conf 以及/etc/mosquitto/conf.d/中以.conf结尾的文件里
+添加配置文件
+在/etc/mosquitto/conf.d目录下，添加配置文件myconfig.conf 配置文件：
+sudo vi /etc/mosquitto/conf.d/myconfig.conf
+粘入下面这些配置
+#-------------------------------------------
+#添加监听端口（很重要，否则只能本机访问）
+listener 1883
+
+# 关闭匿名访问，客户端必须使用用户名
+allow_anonymous false
+
+#指定 用户名-密码 文件
+password_file /etc/mosquitto/pwfile.txt
+#-------------------------------------------
+添加账户及密码
+sudo mosquitto_passwd -c /etc/mosquitto/pwfile.txt lab37
+回车后连续输入2次用户密码即可
+启动mosquitto
+sudo service mosquitto stop
+sudo service mosquitto start
+```
+2. 使用https://github.com/yosssi/gmq这是个纯golang写的mqtt客户端库编写mqtt代码。
+代码已在上面mqtt.go文件中
+
+3. home-assistant安装MQTT集成，配置其连接到ubuntu中的mqtt服务器。
+
+
 
 ## Tips
 ### 一些用来测试的命令（备忘）
