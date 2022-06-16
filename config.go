@@ -20,6 +20,9 @@ type StreamST struct {
 	OnDemand     bool   `json:"on_demand"`
 	FPS          int    `json:"fps"`
 	SamplingRate int    `json:"samplingRate"`
+	MQTTserver   string `json:"mqttServer"`
+	MQTTuserName string `json:"mqttUserName"`
+	MQTTpassword string `json:"mqttPassword"`
 }
 
 // 本质还不就是把配置文件从磁盘加载到内存里

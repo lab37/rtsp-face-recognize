@@ -7,6 +7,7 @@ require (
 	github.com/deepch/vdk v0.0.16
 	github.com/esimov/pigo v1.4.5
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
+	github.com/yosssi/gmq v0.0.1
 )
 
 require github.com/google/uuid v1.3.0 // indirect

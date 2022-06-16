@@ -4,7 +4,10 @@
       "on_demand": false,
       "url": "rtsp://192.168.31.225:554/ch0_1.h264",
       "fps": 20,
-      "samplingRate":200
+      "samplingRate":200,
+      "mqttServer": "192.168.31.131:1883",
+      "mqttUserName": "lab37",
+      "mqttPassword": "142857"
     }
   }
 }
