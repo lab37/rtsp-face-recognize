@@ -17,10 +17,6 @@ func main() {
 	// 建立人名传递通道
 	nameStream := make(chan string, 20)
 
-	// 建立视频解码器
-	rtspClient, frameDecoderSingle := getRtspFrameDecoder(config.Streams["xiaoyi"].URL)
-	defer rtspClient.Close()
-
 	// 建立MQTT连接
 	mqttClient := createMQTTClient(config.Streams["xiaoyi"].MQTTserver, "faceRec-camera", config.Streams["xiaoyi"].MQTTuserName, config.Streams["xiaoyi"].MQTTpassword)
 	defer mqttClient.Terminate()
@@ -30,7 +26,7 @@ func main() {
 
 	// 把通道当队列用，也是没谁了。当然，不要在意这些细节，它能工作。
 	// Because I don't know other good method, so I used this stupid one.
-	go putImagesToChan(rtspClient, frameDecoderSingle, imgStream)
+	go putImagesToChan(config.Streams["xiaoyi"].URL, imgStream)
 
 	faceDescriptions, names := loadFacesDatabase(`face-data.json`)
 
