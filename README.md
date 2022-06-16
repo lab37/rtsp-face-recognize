@@ -141,7 +141,7 @@ sudo mosquitto_passwd -c /etc/mosquitto/pwfile.txt lab37
 sudo service mosquitto stop
 sudo service mosquitto start
 ```
-2. 使用https://github.com/yosssi/gmq这是个纯golang写的mqtt客户端库编写mqtt代码。
+2. 使用(https://github.com/yosssi/gmq), 这是个纯golang写的mqtt客户端库编写mqtt代码。
 代码已在上面mqtt.go文件中
 
 3. home-assistant安装MQTT集成，配置其连接到ubuntu中的mqtt服务器。
