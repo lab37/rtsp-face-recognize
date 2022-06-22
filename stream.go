@@ -130,7 +130,7 @@ func putImagesToQueue(name string, videoPacketQueue chan []byte, imgQueue chan i
 	}
 	for {
 		select {
-		case packetAvDate := <-Config.Streams[name].VideoPacketQueue:
+		case packetAvDate := <-videoPacketQueue:
 			if pic, err := frameDecoderSingle.DecodeSingle(packetAvDate); err == nil && pic != nil {
 				if len(imgQueue) < cap(imgQueue) {
 					imgQueue <- &pic.Image
