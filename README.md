@@ -50,6 +50,26 @@ ssh服务的默认root密码为空
 ```bash
 sudo apt update  && sudo apt upgrade -y
 sudo apt install golang  git  ffmpeg  -y
+```
+ubuntu20.04默认安装的golang不是最新的, 这里要求最新的golang
+升级golang的话要先sudo apt remove golang删除已经安装的, 然后apt autoremove  && apt autoclean
+手动下载golang的安装包(网站：https://studygolang.com/dl),
+```bash
+wget  https://studygolang.com/dl/golang/go1.18.3.linux-amd64.tar.gz
+```
+然后解压安装
+```bash
+tar xf go1.18.linux-amd64.tar.gz -C /usr/local
+sudo ln -sf /usr/local/go/bin/* /usr/bin/
+```
+然后把环境变量加到/etc/profile里
+```bash
+vim /etc/profile 在最后面添加下面两行
+export GOPATH="$HOME/go
+export PATH=$PATH:/usr/local/go/bin
+然后执行命令：
+source  /etc/profile
+sudo apt install gcc g++
 go  env  -w GOPROXY=https://goproxy.cn, direct
 mkdir  -p   ~/go/src
 ```
@@ -71,12 +91,17 @@ sudo apt install libavcodec-dev  libavformat-dev  libavresample-dev  libswscale-
 - 配置文件config.json解释一下：
 ```bash
 {
-  "streams": {
-    "xiaoyi": {  //给视频流起了个名
+  "server": {
+    "http_port": ":8083", // 这里是webRTC的端口, 主要是交给hass用。因为hass自带的RTSP不稳定并且不能多人连接。
+    "mqttServer": "192.168.31.131:1883", //mqtt服务器地址, 用来在发现人脸时上报, 由mqtt-broker转发给hass进行播报。
+    "mqttUserName": "lab37",   
+    "mqttPassword": "142857"
+  },
+  "streams": { // 这里是所有摄像地的地址, 可以添加多个摄像头。目前就一个
+    "H264_AAC": {
       "on_demand": false,
-      "url": "rtsp://192.168.31.225:554/ch0_1.h264",  //这就是我的小蚁摄像机RTSP的地址, 我用的是辅码流。
-      "fps": 20,  //帧率, 暂时用不上
-      "samplingRate":200  // 因为电脑性能不行, 自己编了个采样率, 用来控制检测速度的。
+      "disable_audio": true,
+      "url": "rtsp://192.168.31.225:554/ch0_1.h264"
     }
   }
 }

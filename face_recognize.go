@@ -23,6 +23,36 @@ type recResult struct {
 	names        []string
 }
 
+// 这里是要交到协程里去执行的, 尽量不要有计算量太大的工作, 因为faceRec这个函数就已经很吃算力了。
+func recognizeFaceAndPushName(faceRecogizer *face.Recognizer, names []string, tmpImg image.Image, nameStream chan string) {
+	results, err := faceRec(faceRecogizer, tmpImg, names)
+
+	if err != nil {
+		//log.Println("图片都整不对, 你想让我干个啥, do个毛啊")
+		return
+	}
+
+	if results.anonymousNum == 404 {
+		//log.Println("图片上连个鸟儿都没有, 你想让我干个啥, do个毛啊")
+		return
+	}
+
+	if results.anonymousNum == 0 {
+		for _, name := range results.names {
+			nameStream <- name
+		}
+		return
+	}
+	if len(results.names) == 0 {
+		nameStream <- "anonymous"
+		return
+	}
+	for _, name := range results.names {
+		nameStream <- name
+	}
+	nameStream <- "anonymous"
+}
+
 // 人脸对比
 // face-recognizor
 func faceRec(rec *face.Recognizer, img image.Image, names []string) (results recResult, err error) {
