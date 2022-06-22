@@ -54,7 +54,6 @@ func RTSPWorker(name, url string, OnDemand, DisableAudio, Debug bool, videoPacke
 		return err
 	}
 	defer RTSPClient.Close()
-	log.Println("返回的所有流的配置信息：", RTSPClient.CodecData)
 	if RTSPClient.CodecData != nil {
 		Config.coAd(name, RTSPClient.CodecData)
 	}
@@ -62,7 +61,7 @@ func RTSPWorker(name, url string, OnDemand, DisableAudio, Debug bool, videoPacke
 	if len(RTSPClient.CodecData) == 1 && RTSPClient.CodecData[0].Type().IsAudio() {
 		AudioOnly = true
 	}
-	if !AudioOnly {
+	if !AudioOnly && videoPacketQueue != nil {
 		log.Println("开启协程往照片队列中放入照片..........")
 		go putImagesToQueue(name, videoPacketQueue, imgQueue)
 	}
@@ -94,13 +93,16 @@ func RTSPWorker(name, url string, OnDemand, DisableAudio, Debug bool, videoPacke
 				//	log.Println("来了个关键数据包")
 				keyTest.Reset(20 * time.Second)
 			}
-			b := make([]byte, len(packetAV.Data))
-			copy(b, packetAV.Data)
-			select {
-			case videoPacketQueue <- b:
-				//log.Println("往视频帧队列中放入了一个包,  当前队列长度: ", len(videoPacketQueue))
-			default:
-				log.Println("视频帧数据包队列满了,  目前长度: ", len(videoPacketQueue))
+			// app客户端只取视频的不要重复检测
+			if videoPacketQueue != nil {
+				b := make([]byte, len(packetAV.Data))
+				copy(b, packetAV.Data)
+				select {
+				case videoPacketQueue <- b:
+					//log.Println("往视频帧队列中放入了一个包,  当前队列长度: ", len(videoPacketQueue))
+				default:
+					log.Println("视频帧数据包队列满了,  目前长度: ", len(videoPacketQueue), "总长度：", cap(videoPacketQueue))
+				}
 			}
 
 			Config.cast(name, *packetAV)

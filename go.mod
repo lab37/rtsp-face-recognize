@@ -1,4 +1,4 @@
-module RTSPtoWebRTC
+module rtsp-face-recognize
 
 go 1.18
 

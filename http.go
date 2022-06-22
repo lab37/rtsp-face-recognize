@@ -23,7 +23,7 @@ func serveHTTP() {
 
 	router := gin.Default()
 	router.Use(CORSMiddleware())
-	
+
 	if _, err := os.Stat("./web"); !os.IsNotExist(err) {
 		router.LoadHTMLGlob("web/templates/*")
 		router.GET("/", HTTPAPIServerIndex)
@@ -177,9 +177,10 @@ type Response struct {
 }
 
 type ResponseError struct {
-	Error  string   `json:"error"`
+	Error string `json:"error"`
 }
 
+// 提供给app客户端用, 有多个流的时候, 客户端直接指明单个所需流的地址
 func HTTPAPIServerStreamWebRTC2(c *gin.Context) {
 	url := c.PostForm("url")
 	if _, ok := Config.Streams[url]; !ok {

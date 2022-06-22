@@ -35,7 +35,6 @@ func main() {
 
 	for k, v := range Config.Streams {
 		go func(streamName string, stream StreamST) {
-			log.Println("流名称：", streamName)
 			snapshotTicker := time.NewTicker(time.Millisecond * time.Duration(200))
 			defer snapshotTicker.Stop()
 			for {
