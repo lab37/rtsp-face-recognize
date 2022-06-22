@@ -6,6 +6,7 @@
 但是，但是。。。。。是要钱的。而且还不是一次买断那种。
 
 这两天在杂物堆里找到了一个尘封多年的小蚁的摄像头，灵光一现，于是就有了这个Repo。
+本程序主要修改自：https://github.com/deepch/RTSPtoWebRTC
 
 
 ## 工具和原理
@@ -59,7 +60,7 @@ wget  https://studygolang.com/dl/golang/go1.18.3.linux-amd64.tar.gz
 ```
 然后解压安装
 ```bash
-tar xf go1.18.linux-amd64.tar.gz -C /usr/local
+tar xf go1.18.3.linux-amd64.tar.gz -C /usr/local
 sudo ln -sf /usr/local/go/bin/* /usr/bin/
 ```
 然后把环境变量加到/etc/profile里
@@ -70,7 +71,7 @@ export PATH=$PATH:/usr/local/go/bin
 然后执行命令：
 source  /etc/profile
 sudo apt install gcc g++
-go  env  -w GOPROXY=https://goproxy.cn, direct
+go  env  -w GOPROXY=https://goproxy.cn,direct
 mkdir  -p   ~/go/src
 ```
 - 上面那个go-face里面用到了dlib, 用下面的命令给它安装依赖：
