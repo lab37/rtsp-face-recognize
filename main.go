@@ -40,10 +40,11 @@ func main() {
 			for {
 				select {
 				case <-snapshotTicker.C:
+					tmpImg := <-stream.ImgQueue
 					if len(stream.ImgQueue) > 10 {
 						log.Println(streamName, "流中的图片积压！, 当前已积压：", len(stream.ImgQueue), "张图片。你能换个CPU吗!")
 					}
-					tmpImg := <-stream.ImgQueue
+
 					go func() {
 						smallImg := resize.Resize(320, 0, tmpImg, resize.Lanczos3)
 						numberOfFace := detectFace(faceDetectClassifier, smallImg)
@@ -100,12 +101,7 @@ func main() {
 						log.Println(message)
 						publishMQTTtopic(mqttClient, `homeassistant\camera\facerec`, message, 0)
 					}
-
-				default:
-
 				}
-
-			default:
 			}
 
 		}

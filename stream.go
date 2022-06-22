@@ -17,7 +17,8 @@ var (
 	ErrorStreamExitNoViewer        = errors.New("Stream Exit On Demand No Viewer")
 )
 
-// 为每个配置的RTSP流开启一个协程建立连接, 并进行连接监测管理
+// 为配置文件中的每个RTSP流开启一个协程建立连接, 并进行连接监测管理, 这里是一直连接，不是按需连接。
+// 按需连接的由http服务收到请求后调用config.go的RUNIFNOTRUN方法按需建立。
 func serveStreams() {
 	for k, v := range Config.Streams {
 		if !v.OnDemand {
@@ -90,10 +91,9 @@ func RTSPWorker(name, url string, OnDemand, DisableAudio, Debug bool, videoPacke
 			}
 		case packetAV := <-RTSPClient.OutgoingPacketQueue:
 			if AudioOnly || packetAV.IsKeyFrame {
-				//	log.Println("来了个关键数据包")
 				keyTest.Reset(20 * time.Second)
 			}
-			// app客户端只取视频的不要重复检测
+			// 对于app客户端只取视频的时候不要重复检测
 			if videoPacketQueue != nil {
 				b := make([]byte, len(packetAV.Data))
 				copy(b, packetAV.Data)
@@ -130,9 +130,11 @@ func putImagesToQueue(name string, videoPacketQueue chan []byte, imgQueue chan i
 		log.Fatalln("生成流", name, "的照片解码器时发生错误：", err)
 		return
 	}
+
 	for {
 		select {
 		case packetAvDate := <-videoPacketQueue:
+
 			if pic, err := frameDecoderSingle.DecodeSingle(packetAvDate); err == nil && pic != nil {
 				if len(imgQueue) < cap(imgQueue) {
 					imgQueue <- &pic.Image
@@ -140,8 +142,6 @@ func putImagesToQueue(name string, videoPacketQueue chan []byte, imgQueue chan i
 					log.Println("图片队列已满, 无法放入新图片")
 				}
 			}
-		default:
-			//	log.Println("视频帧数据包队列中没有数据")
 		}
 
 	}
