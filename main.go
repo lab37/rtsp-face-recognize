@@ -31,13 +31,12 @@ func main() {
 	faceRecogizer := getFaceRecognizer("testdata", faceDescriptions)
 	defer faceRecogizer.Close()
 
-	mqttTicker := time.NewTicker(time.Second * 5)
-
 	// 采样图片进行检测，考虑到性能问题只能以设置定时器的方式平均采样。
 
 	for k, v := range Config.Streams {
 		go func(streamName string, stream StreamST) {
-			snapshotTicker := time.NewTicker(time.Millisecond * time.Duration(300))
+			log.Println("流名称：", streamName)
+			snapshotTicker := time.NewTicker(time.Millisecond * time.Duration(200))
 			defer snapshotTicker.Stop()
 			for {
 				select {
@@ -46,17 +45,18 @@ func main() {
 						log.Println(streamName, "流中的图片积压！, 当前已积压：", len(stream.ImgQueue), "张图片。你能换个CPU吗!")
 					}
 					tmpImg := <-stream.ImgQueue
-					smallImg := resize.Resize(320, 0, tmpImg, resize.Lanczos3)
 					go func() {
+						smallImg := resize.Resize(320, 0, tmpImg, resize.Lanczos3)
 						numberOfFace := detectFace(faceDetectClassifier, smallImg)
 						if numberOfFace > 0 {
 							recImg := resize.Resize(720, 0, tmpImg, resize.Lanczos3)
 							recognizeFaceAndPushName(faceRecogizer, names, recImg, nameQueue)
 						}
+
 					}()
 				default:
 					<-stream.ImgQueue
-					//log.Println("这次不赖我，库里没货了. Not my fault, Stupid NIC")
+					//	log.Println("作废一张图片")
 				}
 			}
 		}(k, v)
@@ -64,6 +64,9 @@ func main() {
 
 	// 开协程每5秒统计一下来客, 并进行人脸播报
 	go func() {
+
+		mqttTicker := time.NewTicker(time.Second * 5)
+		defer mqttTicker.Stop()
 		// 建立人名统计映射
 		nameCount := make(map[string]int)
 		for {
@@ -75,7 +78,7 @@ func main() {
 				nums := 0
 				cAnonymousNum := nameCount["anonymous"]
 				for key, value := range nameCount {
-					if value > 3 && key != "anonymous" {
+					if value > 1 && key != "anonymous" {
 						nums = nums + 1
 						message = message + key + ","
 					}

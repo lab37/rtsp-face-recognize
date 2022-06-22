@@ -65,7 +65,7 @@ func (element *ConfigST) RunIFNotRun(uuid string) {
 		if tmp.OnDemand && !tmp.RunLock {
 			tmp.RunLock = true
 			element.Streams[uuid] = tmp
-			go RTSPWorkerSupervisor(uuid, tmp.URL, tmp.OnDemand, tmp.DisableAudio, tmp.Debug, tmp.ImgQueue)
+			go RTSPWorkerSupervisor(uuid, tmp.URL, tmp.OnDemand, tmp.DisableAudio, tmp.Debug, tmp.VideoPacketQueue, tmp.ImgQueue)
 		}
 	}
 }

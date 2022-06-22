@@ -21,17 +21,17 @@ var (
 func serveStreams() {
 	for k, v := range Config.Streams {
 		if !v.OnDemand {
-			go RTSPWorkerSupervisor(k, v.URL, v.OnDemand, v.DisableAudio, v.Debug, v.ImgQueue)
+			go RTSPWorkerSupervisor(k, v.URL, v.OnDemand, v.DisableAudio, v.Debug, v.VideoPacketQueue, v.ImgQueue)
 		}
 	}
 }
 
 //用于监测RTSP连接, 断线后1秒重连
-func RTSPWorkerSupervisor(name, url string, OnDemand, DisableAudio, Debug bool, imgQueue chan image.Image) {
+func RTSPWorkerSupervisor(name, url string, OnDemand, DisableAudio, Debug bool, videoPacketQueue chan []byte, imgQueue chan image.Image) {
 	defer Config.RunUnlock(name)
 	for {
 		log.Println("Stream Try Connect", name)
-		err := RTSPWorker(name, url, OnDemand, DisableAudio, Debug, imgQueue)
+		err := RTSPWorker(name, url, OnDemand, DisableAudio, Debug, videoPacketQueue, imgQueue)
 		if err != nil {
 			log.Println(err)
 			Config.LastError = err
@@ -45,7 +45,7 @@ func RTSPWorkerSupervisor(name, url string, OnDemand, DisableAudio, Debug bool, 
 }
 
 // RTSP连接建立,并获取数据包
-func RTSPWorker(name, url string, OnDemand, DisableAudio, Debug bool, imgQueue chan image.Image) error {
+func RTSPWorker(name, url string, OnDemand, DisableAudio, Debug bool, videoPacketQueue chan []byte, imgQueue chan image.Image) error {
 	keyTest := time.NewTimer(20 * time.Second)
 	clientTest := time.NewTimer(20 * time.Second)
 	//add next TimeOut
@@ -64,7 +64,7 @@ func RTSPWorker(name, url string, OnDemand, DisableAudio, Debug bool, imgQueue c
 	}
 	if !AudioOnly {
 		log.Println("开启协程往照片队列中放入照片..........")
-		go putImagesToQueue(name, imgQueue)
+		go putImagesToQueue(name, videoPacketQueue, imgQueue)
 	}
 
 	for {
@@ -94,11 +94,13 @@ func RTSPWorker(name, url string, OnDemand, DisableAudio, Debug bool, imgQueue c
 				//	log.Println("来了个关键数据包")
 				keyTest.Reset(20 * time.Second)
 			}
+			b := make([]byte, len(packetAV.Data))
+			copy(b, packetAV.Data)
 			select {
-			case Config.Streams[name].VideoPacketQueue <- packetAV.Data:
-				// log.Println("往视频帧队列中放入了一个包,  当前队列长度: ", len(Config.Streams[name].VideoPacketQueue))
+			case videoPacketQueue <- b:
+				//log.Println("往视频帧队列中放入了一个包,  当前队列长度: ", len(videoPacketQueue))
 			default:
-				log.Println("视频帧数据包队列满了,  目前长度: ", len(Config.Streams[name].VideoPacketQueue))
+				log.Println("视频帧数据包队列满了,  目前长度: ", len(videoPacketQueue))
 			}
 
 			Config.cast(name, *packetAV)
@@ -107,7 +109,7 @@ func RTSPWorker(name, url string, OnDemand, DisableAudio, Debug bool, imgQueue c
 }
 
 // 解码数据包, 并把解码得到的图片放到队列imgStream中。
-func putImagesToQueue(name string, imgQueue chan image.Image) {
+func putImagesToQueue(name string, videoPacketQueue chan []byte, imgQueue chan image.Image) {
 	audioOnly := true
 	var videoIDX int
 	for i, codec := range Config.Streams[name].Codecs {
