@@ -65,7 +65,7 @@ sudo ln -sf /usr/local/go/bin/* /usr/bin/
 然后把环境变量加到/etc/profile里
 ```bash
 vim /etc/profile 在最后面添加下面两行
-export GOPATH="$HOME/go
+export GOPATH="$HOME/go"
 export PATH=$PATH:/usr/local/go/bin
 然后执行命令：
 source  /etc/profile
