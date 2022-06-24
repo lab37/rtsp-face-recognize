@@ -6,13 +6,14 @@
 但是，但是。。。。。是要钱的。而且还不是一次买断那种。
 
 这两天在杂物堆里找到了一个尘封多年的小蚁的摄像头，灵光一现，于是就有了这个Repo。
-本程序主要修改自：https://github.com/deepch/RTSPtoWebRTC
 
 
 ## 工具和原理
 下面是用到的工具和简要的步骤
 
 - 一个小蚁YHS-113/17CNY 166WR摄像头，好几年的东西了，闲鱼上很多。50块一个吧差不多。
+
+- 用这个项目代理摄像头的rtsp流(https://github.com/aler9/rtsp-simple-server), 直接用发布的编译好的二进制程序就行。
   
 - 用这个项目(https://github.com/alienatedsec/yi-hack-v5), 把小蚁摄像头刷一下固件，这样就开启了摄像头的RTSP服务。
 
@@ -39,7 +40,7 @@ rstp流地址：
 音频流 : http://ip:554/ch0_3.h264
 ssh服务的默认root密码为空
 
-- 17CN就海思hi3518v200的处理器，18M的内存。15M固态。
+17CN就海思hi3518v200的处理器，18M的内存。15M固态。
 0.3.2的固件不是很稳定，最好关掉ssh，云录像等不用的服务。只留RTSP和httpd两个。
 ```
 
@@ -83,7 +84,32 @@ sudo apt install libdlib-dev libblas-dev liblapack-dev libjpeg-turbo8-dev libatl
 ```bash
 sudo apt install libavcodec-dev  libavformat-dev  libavresample-dev  libswscale-dev  -y
 ```
+- 下载https://github.com/aler9/rtsp-simple-server的最新二制程序, 在配置文件中找到对应位置, 加入如下配置。
+```bash
+paths:
+  gate:
+    source: rtsp://192.168.31.153:8554/gate
+以后访问摄像头将使用rtsp://ubuntuIP:8554/gate
+```
+- 把rtsp-simple-server加入开机启动
+```bash
+sudo mv rtsp-simple-server /usr/local/bin/
+sudo mv rtsp-simple-server.yml /usr/local/etc/
 
+创建服务:
+sudo tee /etc/systemd/system/rtsp-simple-server.service >/dev/null << EOF
+[Unit]
+Wants=network.target
+[Service]
+ExecStart=/usr/local/bin/rtsp-simple-server /usr/local/etc/rtsp-simple-server.yml
+[Install]
+WantedBy=multi-user.target
+EOF
+
+启动服务:
+sudo systemctl enable rtsp-simple-server
+sudo systemctl start rtsp-simple-server
+```
 行了, 搞定！
 
 ### 3.编写程序把上面的步骤粘起来
@@ -92,19 +118,10 @@ sudo apt install libavcodec-dev  libavformat-dev  libavresample-dev  libswscale-
 - 配置文件config.json解释一下：
 ```bash
 {
-  "server": {
-    "http_port": ":8083", // 这里是webRTC的端口, 主要是交给hass用。因为hass自带的RTSP不稳定并且不能多人连接。
-    "mqttServer": "192.168.31.131:1883", //mqtt服务器地址, 用来在发现人脸时上报, 由mqtt-broker转发给hass进行播报。
-    "mqttUserName": "lab37",   
-    "mqttPassword": "142857"
-  },
-  "streams": { // 这里是所有摄像地的地址, 可以添加多个摄像头。目前就一个
-    "H264_AAC": {
-      "on_demand": false,
-      "disable_audio": true,
-      "url": "rtsp://192.168.31.225:554/ch0_1.h264"
-    }
-  }
+    "imgFileName": "/home/lab37/rtspImg.jpg",
+    "mqttServer": "192.168.31.153:1883",
+    "mqttUserName": "lab37",
+    "mqttPassword": "142857"  
 }
 ```
 
@@ -133,6 +150,18 @@ go get
 - 在rtsp-face-recognize目录内使用如下命令开启人脸识别程序。
 
 ```bash
+为了提高读写性能, 最好用内存文件系统：
+mkdir /home/lab37/faceImg
+sudo mount -t tmpfs -o size=100M tmpfs /home/lab37/faceImg
+系统重启后内存挂载的文件系统会消失，可以写入fstab长期挂载
+在/etc/fstab文件中增加挂载配置，可以实现系统启动时自动挂载。具体如下：
+sudo gedit /etc/fstab
+在文件中增加如下内容并保存。
+tmpfs	/home/lab37/faceImg	tmpfs	defaults,size=100M	0 0
+// 这个ffmpeg转码的命令最好是加在rtsp-simple-server配置文件中对应视频流下面的runOnInit里, 并设置runOnInitRestart:yes
+// 这样rtsp-simple-server可以负责监控这个进程在意外退出后重启。
+ffmpeg -i "rtsp://192.168.31.153:8554/gate" -y -f image2 -r 2/1 -update 1 -vf format=gray  /home/lab37/faceImg/rtsp.jpg  
+
 go run *.go
 ```
 搞定!
@@ -202,5 +231,8 @@ sudo mount -t tmpfs -o size=100M tmpfs /home/lab37/faceImg
 sudo gedit /etc/fstab
 在文件中增加如下内容并保存。
 tmpfs	/home/lab37/faceImg	tmpfs	defaults,size=100M	0 0
+
+只输出错误到文件
+nohup command -c -b -d aaa.txt  > /dev/null 2 > log &
 ```
 

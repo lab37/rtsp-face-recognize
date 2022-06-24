@@ -1,24 +1,24 @@
 package main
 
 import (
+	"image"
 	"log"
-	"time"
-
-	"github.com/nfnt/resize"
-
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
+
+	"github.com/nfnt/resize"
 )
 
 func main() {
-	go serveHTTP()
-	go serveStreams()
 	// 建立人名传递通道
 	nameQueue := make(chan string, 20)
 
+	// 建立人名传递通道
+	imgQueue := make(chan image.Image, 25)
 	// 建立MQTT连接
-	mqttClient := createMQTTClient(Config.Server.MQTTserver, "faceRec-camera", Config.Server.MQTTuserName, Config.Server.MQTTpassword)
+	mqttClient := createMQTTClient(Config.MQTTserver, "faceRec-camera", Config.MQTTuserName, Config.MQTTpassword)
 	defer mqttClient.Terminate()
 
 	// 生成人脸检测器
@@ -31,41 +31,32 @@ func main() {
 	faceRecogizer := getFaceRecognizer("testdata", faceDescriptions)
 	defer faceRecogizer.Close()
 
-	// 采样图片进行检测，考虑到性能问题只能以设置定时器的方式平均采样。
+	// 开协程收集图片
+	go monitAndPutNewImgToChan(Config.ImgFileName, imgQueue)
 
-	for k, v := range Config.Streams {
-		go func(streamName string, stream StreamST) {
-			snapshotTicker := time.NewTicker(time.Millisecond * time.Duration(200))
-			defer snapshotTicker.Stop()
-			for {
-				select {
-				case <-snapshotTicker.C:
-					tmpImg := <-stream.ImgQueue
-					if len(stream.ImgQueue) > 10 {
-						log.Println(streamName, "流中的图片积压！, 当前已积压：", len(stream.ImgQueue), "张图片。你能换个CPU吗!")
-					}
-
-					go func() {
-						smallImg := resize.Resize(320, 0, tmpImg, resize.Lanczos3)
-						numberOfFace := detectFace(faceDetectClassifier, smallImg)
-						if numberOfFace > 0 {
-							recImg := resize.Resize(720, 0, tmpImg, resize.Lanczos3)
-							recognizeFaceAndPushName(faceRecogizer, names, recImg, nameQueue)
-						}
-
-					}()
-				default:
-					<-stream.ImgQueue
-					//	log.Println("作废一张图片")
+	// 开协识别图片
+	go func() {
+		for {
+			select {
+			case tmpImg := <-imgQueue:
+				if len(imgQueue) > 10 {
+					log.Println("图片积压！, 当前已积压：", len(imgQueue), "张图片。你能换个CPU吗!")
 				}
+				smallImg := resize.Resize(320, 0, tmpImg, resize.Lanczos3)
+				numberOfFace := detectFace(faceDetectClassifier, smallImg)
+				if numberOfFace > 0 {
+					recognizeFaceAndPushName(faceRecogizer, names, tmpImg, nameQueue)
+				}
+
 			}
-		}(k, v)
-	}
+		}
+
+	}()
 
 	// 开协程每5秒统计一下来客, 并进行人脸播报
 	go func() {
 
-		mqttTicker := time.NewTicker(time.Second * 5)
+		mqttTicker := time.NewTicker(time.Second * 3)
 		defer mqttTicker.Stop()
 		// 建立人名统计映射
 		nameCount := make(map[string]int)
@@ -86,13 +77,13 @@ func main() {
 				}
 				switch {
 				case nums == 0:
-					if cAnonymousNum > 5 {
+					if cAnonymousNum > 3 {
 						message = message + "有陌生人来了"
 						log.Println(message)
 						publishMQTTtopic(mqttClient, `homeassistant\camera\facerec`, message, 0)
 					}
 				case nums > 0:
-					if cAnonymousNum > 5 {
+					if cAnonymousNum > 3 {
 						message = message + "来了, 带着陌生人"
 						log.Println(message)
 						publishMQTTtopic(mqttClient, `homeassistant\camera\facerec`, message, 0)

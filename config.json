@@ -1,15 +1,6 @@
 {
-  "server": {
-    "http_port": ":8083",
-    "mqttServer": "192.168.31.131:1883",
+    "imgFileName": "/home/lab37/rtspImg.jpg",
+    "mqttServer": "192.168.31.153:1883",
     "mqttUserName": "lab37",
-    "mqttPassword": "142857"
-  },
-  "streams": {
-    "H264_AAC": {
-      "on_demand": false,
-      "disable_audio": true,
-      "url": "rtsp://192.168.31.225:554/ch0_1.h264"
-    }
-  }
+    "mqttPassword": "142857"  
 }

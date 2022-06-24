@@ -19,7 +19,7 @@ func detectFace(classifier *pigo.Pigo, img image.Image) (numberOfFace int) {
 
 	cParams := pigo.CascadeParams{
 		MinSize:     20,
-		MaxSize:     1000,
+		MaxSize:     640,
 		ShiftFactor: 0.1,
 		ScaleFactor: 1.1,
 
