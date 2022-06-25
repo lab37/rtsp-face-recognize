@@ -7,6 +7,7 @@ import (
 	"image/jpeg"
 	"io/ioutil"
 
+	//  "time"
 	"log"
 	"path/filepath"
 
@@ -25,7 +26,10 @@ type recResult struct {
 
 // 这里是要交到协程里去执行的, 尽量不要有计算量太大的工作, 因为faceRec这个函数就已经很吃算力了。
 func recognizeFaceAndPushName(faceRecogizer *face.Recognizer, names []string, tmpImg image.Image, nameStream chan string) {
+	//	start := time.Now()
 	results, err := faceRec(faceRecogizer, tmpImg, names)
+	//elapsed := time.Since(start)
+	// log.Println("本次人脸识别耗时:", elapsed)
 
 	if err != nil {
 		//log.Println("图片都整不对, 你想让我干个啥, do个毛啊")
@@ -50,6 +54,7 @@ func recognizeFaceAndPushName(faceRecogizer *face.Recognizer, names []string, tm
 	for _, name := range results.names {
 		nameStream <- name
 	}
+
 	nameStream <- "anonymous"
 }
 

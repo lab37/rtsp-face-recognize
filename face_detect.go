@@ -5,11 +5,14 @@ import (
 	"io/ioutil"
 	"log"
 
+	//	"time"
+
 	pigo "github.com/esimov/pigo/core"
 )
 
 // 使用特定的模型对象来检测图片中的人脸。计算出人脸在图片的位置与置信度，返回人脸个数。
 func detectFace(classifier *pigo.Pigo, img image.Image) (numberOfFace int) {
+	//	start := time.Now()
 	angle := 0.0 // cascade rotation angle. 0.0 is 0 radians and 1.0 is 2*pi radians
 
 	src := pigo.ImgToNRGBA(img)
@@ -41,6 +44,8 @@ func detectFace(classifier *pigo.Pigo, img image.Image) (numberOfFace int) {
 	if numberOfFace > 0 {
 		// log.Println("来了，老弟， 好嗨哟！")
 	}
+	//elapsed := time.Since(start)
+	// log.Println("本次人脸检测耗时:", elapsed)
 	return
 }
 

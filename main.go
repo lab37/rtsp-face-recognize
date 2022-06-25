@@ -7,8 +7,6 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
-
-	"github.com/nfnt/resize"
 )
 
 func main() {
@@ -42,8 +40,7 @@ func main() {
 				if len(imgQueue) > 10 {
 					log.Println("图片积压！, 当前已积压：", len(imgQueue), "张图片。你能换个CPU吗!")
 				}
-				smallImg := resize.Resize(320, 0, tmpImg, resize.Lanczos3)
-				numberOfFace := detectFace(faceDetectClassifier, smallImg)
+				numberOfFace := detectFace(faceDetectClassifier, tmpImg)
 				if numberOfFace > 0 {
 					recognizeFaceAndPushName(faceRecogizer, names, tmpImg, nameQueue)
 				}
