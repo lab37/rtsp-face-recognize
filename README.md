@@ -260,5 +260,31 @@ tmpfs	/home/lab37/faceImg	tmpfs	defaults,size=100M	0 0
 
 只输出错误到文件
 nohup command -c -b -d aaa.txt  > /dev/null 2 > log &
+
+ffmpeg有时会异常退出, 需要监控ffmpeg运行, 编写脚本：ffmpeg2jpg.sh
+ffmpeg -i "rtsp://192.168.31.153:8554/gate" -y -f image2 -r 2/1 -update 1   -vf format=gray  /home/lab37/faceImg/rtsp.jpg 2> /dev/null &
+
+再编写一个监控ffmpeg的脚本, check_ff_mp_eg_live.sh
+#!/bin/sh 
+num=`ps -ef | grep ffmpeg | grep -v grep | wc -l`
+if [ $num -lt 1 ]
+then
+ . /home/lab37/ffmpeg2jpg.sh
+fi
+上面那个.不要落了，这是一个脚本调用另一个脚本的方法，或者用source. 因为脚本名字中有ffmpeg，所以要分开写,不然麻烦, 
+把脚本添加crontab
+crontab -e 
+*/1 * * * *  /home/lab37/check_ffmpeg_live.sh
+
+Ubuntu默认没有开启cron定时任务的执行日志，需手动打开
+编辑 rsyslog 配置文件，如果没有就新建一个
+sudo vim /etc/rsyslog.d/50-default.conf
+取消 cron 注释，变成如下（如果没有此行配置就下入如下配置）
+cron.*          /var/log/cron.log
+重启 rsyslog 服务
+sudo service rsyslog restart
+然后执行crontab的任务，比如设置一个每分钟执行一次的，
+过一分钟之后就可以看到生成了 /var/log/cron.log 文件
+查看没有问题后最好关掉这个日志。
 ```
 
