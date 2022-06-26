@@ -200,7 +200,33 @@ sudo service mosquitto start
 代码已在上面mqtt.go文件中
 
 3. home-assistant安装MQTT集成，配置其连接到ubuntu中的mqtt服务器。
-
+4. 安装(https://github.com/deepch/RTSPtoWebRTC), 将rtsp-simple-server的rtsp流转为webRtc提
+   供给home-assistant用。
+5. docker安装home-assistant
+```bash
+docker要先登陆: sudo  docker login
+sudo docker search home-assistant
+sudo docker pull homeassistant/home-assistant
+sudo docker run -d --name="hass" -v /home/lab37/hass:/config -p 8123:8123 homeassistant/home-assistant
+d：表示在后台运行
+name：给容器设置别名（不然会随机生成，为了方便管理）
+v：配置数据卷（容器内的数据直接映射到本地主机环境，参考路径配置， 意思就是把宿主机的hass目录, 映射到主机的config目录
+p：映射端口（容器内的端口直接映射到本地主机端口最后便是刚才下载的镜像了，运行该容器。
+查看状态
+docker ps
+## 启动
+docker start hass
+## 停止
+docker stop hass
+## 列出所有镜像
+docker images
+## 列出创建的所有容器
+docker ps -a
+## 删除这个容器
+docker rm 5e436ae313
+## 删除镜像
+docker rmi name:tag| ID
+```
 
 
 ## Tips

@@ -38,8 +38,17 @@ func monitAndPutNewImgToChan(fileName string, imgQueue chan image.Image) {
 			}
 
 			if event.Op&fsnotify.Write == fsnotify.Write {
-				imgBytes, _ = os.ReadFile(fileName)
-				img, _ := jpeg.Decode(bytes.NewReader(imgBytes))
+				imgBytes, err = os.ReadFile(fileName)
+				if err != nil {
+					continue
+				}
+				if len(imgBytes) == 0 {
+					continue
+				}
+				img, err := jpeg.Decode(bytes.NewReader(imgBytes))
+				if err != nil {
+					continue
+				}
 				if len(imgQueue) < cap(imgQueue) {
 					imgQueue <- img
 				} else {
