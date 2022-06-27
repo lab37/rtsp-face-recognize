@@ -11,10 +11,11 @@ var Config = loadConfig()
 
 //ServerST struct
 type ConfigST struct {
-	ImgFileName  string `json:"imgFileName"`
-	MQTTserver   string `json:"mqttServer"`
-	MQTTuserName string `json:"mqttUserName"`
-	MQTTpassword string `json:"mqttPassword"`
+	ImgFileName      string `json:"imgFileName"`
+	MQTTserver       string `json:"mqttServer"`
+	MQTTuserName     string `json:"mqttUserName"`
+	MQTTpassword     string `json:"mqttPassword"`
+	FFmpegScriptFile string `json:"ffmpegScriptFile"`
 }
 
 //读取配置文件并生成附属结构

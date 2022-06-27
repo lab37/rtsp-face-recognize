@@ -4,9 +4,12 @@ import (
 	"image"
 	"log"
 	"os"
+	"os/exec"
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/yosssi/gmq/mqtt/client"
 )
 
 func main() {
@@ -15,9 +18,27 @@ func main() {
 
 	// 建立人名传递通道
 	imgQueue := make(chan image.Image, 25)
-	// 建立MQTT连接
+
+	// 建立MQTT连接, 并建立订阅主题与处理函数的对应
 	mqttClient := createMQTTClient(Config.MQTTserver, "faceRec-camera", Config.MQTTuserName, Config.MQTTpassword)
 	defer mqttClient.Terminate()
+	err := mqttClient.Subscribe(&client.SubscribeOptions{
+		SubReqs: []*client.SubReq{
+			&client.SubReq{
+				TopicFilter: []byte(`security\gate\motion`),
+				QoS:         0,
+				// Define the processing of the message handler.
+				Handler: func(topicName, message []byte) {
+					cmd := exec.Command("sh", "-c", Config.FFmpegScriptFile)
+					cmd.Run()
+					//	log.Println(string(topicName), string(message))
+				},
+			},
+		},
+	})
+	if err != nil {
+		panic(err)
+	}
 
 	// 生成人脸检测器
 	faceDetectClassifier := getFaceDetectClassifier(`cascade/facefinder`)

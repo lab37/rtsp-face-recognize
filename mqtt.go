@@ -46,17 +46,24 @@ func publishMQTTtopic(mqttClietn *client.Client, topicName string, message strin
 	}
 }
 
-// 订阅一个主题
-func subscribeMQTTtopic(mqttClietn *client.Client, topicName string, qos byte) {
+// 订阅一个主题, 不要调用这个函数, 这里主要用来展现写法, 调用时自己编写
+func subscribeMQTTtopic(mqttClient *client.Client, topicName string, qos byte) {
 	// 订阅主题
-	err := mqttClietn.Subscribe(&client.SubscribeOptions{
+	err := mqttClient.Subscribe(&client.SubscribeOptions{
 		SubReqs: []*client.SubReq{
 			&client.SubReq{
 				TopicFilter: []byte(topicName),
 				QoS:         qos,
 				// Define the processing of the message handler.
-				Handler: func(topicName, message []byte) {
-					fmt.Println(string(topicName), string(message))
+				Handler: func(topicName11, message []byte) {
+					fmt.Println(string(topicName11), string(message))
+				},
+			},
+			&client.SubReq{
+				TopicFilter: []byte("bar/#"),
+				QoS:         qos,
+				Handler: func(topicName22, message []byte) {
+					fmt.Println(string(topicName22), string(message))
 				},
 			},
 		},

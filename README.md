@@ -262,7 +262,7 @@ tmpfs	/home/lab37/faceImg	tmpfs	defaults,size=100M	0 0
 nohup command -c -b -d aaa.txt  > /dev/null 2 > log &
 
 ffmpeg有时会异常退出, 需要监控ffmpeg运行, 编写脚本：ffmpeg2jpg.sh
-ffmpeg -i "rtsp://192.168.31.153:8554/gate" -y -f image2 -r 2/1 -update 1   -vf format=gray  /home/lab37/faceImg/rtsp.jpg 2> /dev/null &
+timeout 60 ffmpeg -i "rtsp://192.168.31.153:8554/gate" -y -f image2 -r 5/1 -update 1   -vf format=gray  /home/lab37/faceImg/rtsp.jpg 2> /dev/null &
 
 再编写一个监控ffmpeg的脚本, check_ff_mp_eg_live.sh
 #!/bin/sh 
