@@ -158,9 +158,7 @@ sudo mount -t tmpfs -o size=100M tmpfs /home/lab37/faceImg
 sudo gedit /etc/fstab
 在文件中增加如下内容并保存。
 tmpfs	/home/lab37/faceImg	tmpfs	defaults,size=100M	0 0
-// 这个ffmpeg转码的命令最好是加在rtsp-simple-server配置文件中对应视频流下面的runOnInit里, 并设置runOnInitRestart:yes
-// 这样rtsp-simple-server可以负责监控这个进程在意外退出后重启。
-ffmpeg -i "rtsp://192.168.31.153:8554/gate" -y -f image2 -r 2/1 -update 1 -vf format=gray  /home/lab37/faceImg/rtsp.jpg  
+
 
 go run *.go
 ```
@@ -262,7 +260,7 @@ tmpfs	/home/lab37/faceImg	tmpfs	defaults,size=100M	0 0
 nohup command -c -b -d aaa.txt  > /dev/null 2 > log &
 
 ffmpeg有时会异常退出, 需要监控ffmpeg运行, 编写脚本：ffmpeg2jpg.sh
-timeout 60 ffmpeg -i "rtsp://192.168.31.153:8554/gate" -y -f image2 -r 5/1 -update 1   -vf format=gray  /home/lab37/faceImg/rtsp.jpg 2> /dev/null &
+timeout 60 ffmpeg -i "rtsp://192.168.31.153:8554/gate" -y -f image2 -r 3/1 -update 1   -vf format=gray  /home/lab37/faceImg/rtsp.jpg 2> /dev/null &
 
 再编写一个监控ffmpeg的脚本, check_ff_mp_eg_live.sh
 #!/bin/sh 
@@ -274,7 +272,7 @@ fi
 上面那个.不要落了，这是一个脚本调用另一个脚本的方法，或者用source. 因为脚本名字中有ffmpeg，所以要分开写,不然麻烦, 
 把脚本添加crontab
 crontab -e 
-*/1 * * * *  /home/lab37/check_ffmpeg_live.sh
+*/1 * * * *  /home/lab37/check_ff_mp_eg_live.sh
 
 Ubuntu默认没有开启cron定时任务的执行日志，需手动打开
 编辑 rsyslog 配置文件，如果没有就新建一个
