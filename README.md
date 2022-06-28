@@ -1,9 +1,7 @@
 # RTSPtoFaceRec
-一个老掉牙的小蚁摄像机 加 一台老掉腚的朝巴破电脑  制作一个人脸识别小工具。
+一个老掉牙的小蚁摄像机 加一台老老掉牙的破电脑  制作一个人脸识别小工具。
 
-为什么有这个想法，绝对不是闲得蛋疼，是因为一个字：穷！
-刚买了个小米智能锁，上面有摄像头，本以为带人脸识别功能，调了一会才发现，确实是带人脸识别功能，但是，
-但是，但是。。。。。是要钱的。而且还不是一次买断那种。
+为什么有这个想法，因为小米智能锁，上面有摄像头，带人脸识别功能，但是，但是，但是。。。。。是要钱的。而且还不是一次买断那种。
 
 这两天在杂物堆里找到了一个尘封多年的小蚁的摄像头，灵光一现，于是就有了这个Repo。
 
@@ -11,7 +9,7 @@
 ## 工具和原理
 下面是用到的工具和简要的步骤
 
-- 一个小蚁YHS-113/17CNY 166WR摄像头，好几年的东西了，闲鱼上很多。50块一个吧差不多。
+- 一个小蚁YHS-113/17CNY 166WR摄像头，好几年的东西了，闲鱼上很多。40块一个吧差不多。
 
 - 用这个项目代理摄像头的rtsp流(https://github.com/aler9/rtsp-simple-server), 直接用发布的编译好的二进制程序就行。
   
@@ -53,7 +51,7 @@ ssh服务的默认root密码为空
 sudo apt update  && sudo apt upgrade -y
 sudo apt install golang  git  ffmpeg  -y
 ```
-ubuntu20.04默认安装的golang不是最新的, 这里要求最新的golang
+ubuntu20.04默认安装的golang不是最新的, 这里要求最新的golang, 为什么要用golang, 因为我只有golang用的熟。
 升级golang的话要先sudo apt remove golang删除已经安装的, 然后apt autoremove  && apt autoclean
 手动下载golang的安装包(网站：https://studygolang.com/dl),
 ```bash
@@ -260,7 +258,7 @@ tmpfs	/home/lab37/faceImg	tmpfs	defaults,size=100M	0 0
 nohup command -c -b -d aaa.txt  > /dev/null 2 > log &
 
 ffmpeg有时会异常退出, 需要监控ffmpeg运行, 编写脚本：ffmpeg2jpg.sh
-timeout 60 ffmpeg -i "rtsp://192.168.31.153:8554/gate" -y -f image2 -r 3/1 -update 1   -vf format=gray  /home/lab37/faceImg/rtsp.jpg 2> /dev/null &
+timeout 20 ffmpeg -i "rtsp://127.0.0.1:8554/gate" -y -f image2 -r 3/1 -update 1   -vf format=gray  /home/lab37/faceImg/rtsp.jpg 2> /dev/null &
 
 再编写一个监控ffmpeg的脚本, check_ff_mp_eg_live.sh
 #!/bin/sh 
