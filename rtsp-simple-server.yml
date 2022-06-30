@@ -162,8 +162,6 @@ hlsServerCert: server.crt
 paths:
   gate:
     source: rtsp://192.168.31.225:554/ch0_1.h264
-    runOnInit: ffmpeg -i "rtsp://192.168.31.153:8554/gate" -y -f image2 -r 2/1 -update 1 -vf format=gray  /home/lab37/faceImg/rtsp.jpg  
-    runOnInitRestart: yes
   all:
     # Source of the stream. This can be:
     # * publisher -> the stream is published by a RTSP or RTMP client

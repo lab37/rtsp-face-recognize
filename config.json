@@ -1,6 +1,6 @@
 {
     "imgFileName": "/home/lab37/rtspImg.jpg",
-    "mqttServer": "192.168.31.153:1883",
+    "mqttServer": "127.0.0.1:1883",
     "mqttUserName": "lab37",
     "mqttPassword": "142857",
     "ffmpegScriptFile": "/home/lab37/check_ff_mp_eg_live.sh"

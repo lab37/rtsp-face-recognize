@@ -19,6 +19,7 @@ func main() {
 	// 建立人名传递通道
 	imgQueue := make(chan image.Image, 25)
 
+	log.Println("连接MQTT服务器并订阅主题..............................")
 	// 建立MQTT连接, 并建立订阅主题与处理函数的对应
 	mqttClient := createMQTTClient(Config.MQTTserver, "faceRec-camera", Config.MQTTuserName, Config.MQTTpassword)
 	defer mqttClient.Terminate()
@@ -29,6 +30,7 @@ func main() {
 				QoS:         0,
 				// Define the processing of the message handler.
 				Handler: func(topicName, message []byte) {
+					log.Println("收到人员活动报告..............................")
 					cmd := exec.Command("sh", "-c", Config.FFmpegScriptFile)
 					cmd.Run()
 					//	log.Println(string(topicName), string(message))
@@ -53,6 +55,7 @@ func main() {
 	// 开协程收集图片
 	go monitAndPutNewImgToChan(Config.ImgFileName, imgQueue)
 
+	log.Println("开启图片识别协程..............................")
 	// 开协识别图片
 	go func() {
 		for {
@@ -71,6 +74,7 @@ func main() {
 
 	}()
 
+	log.Println("开启统计人名协程..............................")
 	// 开协程每5秒统计一下来客, 并进行人脸播报
 	go func() {
 
