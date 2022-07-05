@@ -282,5 +282,7 @@ sudo service rsyslog restart
 然后执行crontab的任务，比如设置一个每分钟执行一次的，
 过一分钟之后就可以看到生成了 /var/log/cron.log 文件
 查看没有问题后最好关掉这个日志。
+
+hass中的xiaomi iot auto集成刷新状态很慢, 频率很低。无法满足实时性要求。只能监听绿米网关的组播信息来触发一些实时性场景。
 ```
 
